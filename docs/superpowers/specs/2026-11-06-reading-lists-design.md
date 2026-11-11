@@ -54,10 +54,11 @@ one standalone note in the user's own library, outside any folder, tagged
 - The truth is not tags: tags on group items are shared with every member, and
   a removed tag cannot be restored, while a trashed note can.
 - For apps without plugins (Zotero for iOS), the plugin mirrors the state onto
-  papers in the user's own library as `_reading` and `_read` tags, rewritten
-  from the note after every change and at startup. The mirror is one way: a
-  tag added or removed by hand is overwritten, never read. Group items get no
-  mirror tags. The skill can rebuild the mirror on request.
+  papers in the user's own library as `_unread`, `_reading` and `_read` tags,
+  rewritten from the note after every change and at startup. `_unread` goes
+  only on papers in a reading list; a paper in no list gets no mirror tag. The
+  mirror is one way: a tag added or removed by hand is overwritten, never read.
+  Group items get no mirror tags. The skill can rebuild the mirror on request.
 - Two state notes (a sync race) are merged per paper, the later `at` winning,
   then Read over Reading over Unread, then the greater `at` text, so either
   order gives the same note; the plugin keeps the merge in the note with the
