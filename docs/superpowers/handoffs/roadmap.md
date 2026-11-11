@@ -325,13 +325,14 @@ any failure into a new entry above.
       tab at once and survives a restart; the list note still reads author,
       year, title.
 - [ ] R1 fixes, right-click a folder with a list, Clear Reading List...: Cancel
-      keeps the steps, OK empties them; the folder, note and papers stay; the
-      dialog text reads right.
+      (the default, Enter) keeps the steps, Clear empties them; the folder,
+      note and papers stay; the dialog text reads right with one step and with
+      several.
 - [ ] R1 fixes, mirror: mark a paper: its tag follows in My Library; an Unread
       paper in a list folder has `_unread`, one in no list has none (the first
       run after the update removes hand-added ones); a mark triggers no
       citation update request and no graph remount.
-- [ ] R1 fixes, colours: the Reading plan view shows Unread red,
+- [ ] R1 fixes, colours: the Reading plan view and the section show Unread red,
       Reading yellow, Read green, in both themes, red darkest and yellow
       lightest.
 - [ ] R1 fixes, graph gear (Meristema): open Color: the chosen row is
