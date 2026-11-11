@@ -196,23 +196,12 @@ Use all providers button, and the three-action View menu.
       `zotero-meristema-reading` (pushed; 36 Zotero cases), and
       `zot.py reading-list` with its Python port in the skills repo (1.12.0,
       pushed). Step 3 (the Reading plan view) is built and pushed in this
-      repo. The user walked part of the checks on 2026-11-11; the R1 fixes
-      below come from that walk. The R1 decisions wait for the user. Renaming
+      repo. The user walked part of the checks on 2026-11-11; the fixes from
+      that walk are built and unwalked (the R1 fixes lines under Manual
+      verification). Not fixed: Alt+Up and Alt+Down right after a click on a
+      paper's title do nothing (focus goes to the item list). The R1
+      decisions wait for the user. Renaming
       this repo to `zotero-meristema-graph` comes last.
-- [ ] R1 fixes, Meristema Reading (from the 2026-11-11 walk): - Dragging a step in the section gives little feedback: show a ghost
-      under the pointer and slide the other steps apart. - Sorted by Step, the item list keeps its old order after a reorder
-      until Step is clicked twice: re-sort it. - "Not in the steps" refuses a drop on its heading: make the heading
-      part of the drop zone. - Alt+Up/Down work only when the row itself has focus, never from the
-      reason field or after a click on the title: make them reachable. - Selection in the section is a faint grey: use Zotero's selection
-      blue. - Selecting another item scrolls the item pane to the top: keep it on
-      the Reading list section. - The list tab has a blank favicon: use the plugin's logo. - Papers show as author, year: show the title too, with a setting. - Restore open list tabs after a restart (reverses the earlier rule
-      that keeps them out of the session). - A way to clear a reading list, behind a warning dialog (what it
-      clears is the user's call).
-- [ ] R1 fixes, Reading plan view: colours read green, Reading yellow, to
-      read red; the state names in menus, Key and tags should match (the
-      user's call on the wording).
-- [ ] Graph display settings (the gear): a select's chosen entry shows a
-      bullet; mark it the way the View dropdown marks its choice.
 - [ ] R1 decisions for the user (defaults are built; change any): - Labels: item menu "Mark as" > Unread, Reading, Read; folder menu "Make
       Reading List" and "Open Reading List"; section "Reading list", with
       "Open as Tab" and "Not in the steps". - The tab opens from the folder menu or the section, not by
@@ -226,12 +215,10 @@ Use all providers button, and the three-action View menu.
       order). - The Reading plan view's copy: summary "Reading step × citations,
       colour read state. What to read next."; paragraph "Ticked reading lists
       in reading order, higher the more they are cited, coloured by what you
-      have read; a dashed line joins each list's steps." - Read state colours are fixed: Unread ramp stop 0, Reading stop 2, Read
-      stop 4. A paper outside the library (a citation-hop paper) reads "Not in
-      library", the no-value grey. - Papers in no ticked list sit one step after the last.
-- [ ] Automatic citation updates should ignore a modify that only changes
-      Meristema Reading's mirror tags (`_reading`, `_read`); today each mark
-      costs a provider request and a graph remount.
+      have read; a dashed line joins each list's steps." - Read state colours are fixed: Unread red, Reading yellow, Read green,
+      each with a light and a dark shade (light: Reading #b08500, Read
+      #2d8247). A paper outside the library (a citation-hop paper) reads "Not
+      in library", the no-value grey. - Papers in no ticked list sit one step after the last.
 - [ ] `normalizeDOI` in `src/domain/workIdentity.ts` lowercases with
       `toLocaleLowerCase`, so a Turkish-locale Zotero gives other ids; the
       reading copy uses `toLowerCase`. Match it.
@@ -304,36 +291,75 @@ any failure into a new entry above.
       Retraction or Provider, and a retracted paper still has its ring. Update a
       paper published last year: its Recent
       citation rate is last year's count, not a third of it.
-- [ ] R1, Meristema Reading. Install
-      `zotero-meristema-reading/.scaffold/build/meristema-reading.xpi` (`npm run build`
-      there first if it is missing). Answered already:
-      Zotero's note editor drops the `<pre>`'s attribute, so readers fall back
-      to the block's content. Marking, tags and the note editor passed on
-      2026-11-11; the section and the tab wait for the R1 fixes above. - With the Step column on (column picker), click quickly between items
-      while a mark settles: the selection never jumps back and the list
-      never visibly reloads. Typing 30 s in a child note does not disturb
-      the cursor. - A sync of many changed items, or the first sync of a new profile:
-      `_read` tags do not vanish and come back; no errors in the console. - Make Reading List on a folder sorted some other way than by title: the
-      note follows that order. With a search filter on, the shown papers
-      come first. Sort by Step: steps 1 to n, then the rest blank. Add a
-      paper: it shows blank, after the last step. - The Reading list section, light and dark themes: drag a step's handle
-      with the mouse to reorder; drop a paper from Not in the steps onto a
-      step; drop a step onto Not in the steps; Alt+Up and Alt+Down twice in
-      a row; the item list keeps its selection. Long titles stay on one line in
-      the section. - Type a reason, then click away: it is saved. Escape restores it. A mark
-      or sync landing while you type keeps your text. Dragging text out of a
-      reason into another app works and moves no step. - Open Reading List: full-width cards, reasons in full, a long list
-      scrolls inside the tab, no context pane. Click a title: Zotero switches
-      to the library, on that folder, with the paper selected. A reader tab's
-      context pane is as it was after you switch back. - Groups: in an editable group folder, make a list and reorder it; its
-      links point at `groups/<id>`. Mark a group paper: My Library's state
-      note changes, the group item gets no tag, a My Library copy with the
-      same DOI does. In a read-only group, the section and the tab offer no
-      editing. - Disable and re-enable the plugin with a list tab open: one of each menu
-      entry, one Step column, one section, styles still applied, no leftover
-      tab, no console errors. - Two computers: mark different papers on each before syncing; after
-      both sync, one state note is left, the other in the trash, and both
-      marks are kept.
+- [ ] R1 fixes, first: rebuild and reinstall both XPIs before the walk
+      (`npm test` deletes the built XPI); byte-compare the extracted bundles
+      if unsure.
+- [ ] R1 fixes, sidebar steps (light and dark): drag a step's handle: the whole
+      row follows the pointer and a dashed slot opens where it will land, rows
+      sliding apart; the drop lands there, dropping back changes nothing.
+      Escape mid-drag or a drop outside leaves no slot or fade. Dragging text
+      out of a reason starts no step drag.
+- [ ] R1 fixes, drop onto the "Not in the steps" heading: a move cursor and a
+      dashed outline; the drop removes the step. An unordered paper dragged
+      into the steps lands with an empty reason. Repeat in a list tab.
+- [ ] R1 fixes, Alt keys: click in a reason, type, Alt+Up: the step moves, the
+      text is kept, the caret stays; Alt+Down keeps moving it. Click a row's
+      number or handle, then Alt+Up/Down: it moves and keeps focus. Known: right
+      after a click on the title the keys do nothing.
+- [ ] R1 fixes, Step sort: sorted by Step, reorder a step: the item list
+      re-sorts at once, with no double click on Step.
+- [ ] R1 fixes, click through papers in the folder: the item pane stays on the
+      Reading list section, and the current row is Zotero's blue in both
+      themes.
+- [ ] R1 fixes, tabs: a list tab shows the Meristema Reading logo, also in the
+      tabs menu, in both themes. With list tabs open, quit and start Zotero:
+      they return in order behind the library tab and draw when selected. A
+      tab closed by hand, or whose folder or note was deleted, does not
+      return. Disable and re-enable the plugin: open tabs return. Over a list
+      tab, resizing or stacked layout never shows the context pane's splitter;
+      a reader tab's context pane still opens. Tabs reopen only in the first
+      window.
+- [ ] R1 fixes, settings: Zotero Settings has a Meristema Reading pane with
+      "Show papers as" and three radios ("Author, year, title" on a fresh
+      profile). Picking Title or Author, year relabels an open section and list
+      tab at once and survives a restart; the list note still reads author,
+      year, title.
+- [ ] R1 fixes, right-click a folder with a list, Clear Reading List...: Cancel
+      keeps the steps, OK empties them; the folder, note and papers stay; the
+      dialog text reads right.
+- [ ] R1 fixes, mirror: mark a paper: its tag follows in My Library; an Unread
+      paper in a list folder has `_unread`, one in no list has none (the first
+      run after the update removes hand-added ones); a mark triggers no
+      citation update request and no graph remount.
+- [ ] R1 fixes, colours: the Reading plan view and the section show Unread red,
+      Reading yellow, Read green, in both themes, red darkest and yellow
+      lightest.
+- [ ] R1 fixes, graph gear (Meristema): open Color: the chosen row is
+      highlighted like View's active row, with no bullet, in both themes. The
+      popup flips above the button near the window's bottom. Down, Down,
+      Enter, then Escape twice closes the popup, then the panel.
+- [ ] R1, Meristema Reading, left from the earlier walk. Install
+      `zotero-meristema-reading/.scaffold/build/meristema-reading.xpi`. With
+      the Step column on, click quickly between items while a mark settles: the
+      selection never jumps back and the list never visibly reloads; typing
+      30 s in a child note does not disturb the cursor. A sync of many changed
+      items, or the first sync of a new profile: `_read` tags do not vanish and
+      come back; no console errors. Make Reading List on a folder sorted some
+      other way than by title: the note follows that order, shown papers first
+      under a search filter; sort by Step: steps 1 to n, then blanks; an added
+      paper shows blank, after the last step. Type a reason, then click away:
+      saved; Escape restores it; a mark or sync landing while you type keeps
+      your text. Open Reading List: full-width cards, a long list scrolls
+      inside the tab, no context pane; click a title: Zotero switches to the
+      library on that folder with the paper selected. Groups: in an editable
+      group folder, make and reorder a list (links point at `groups/<id>`);
+      marking a group paper changes My Library's state note, gives the group
+      item no tag, and a My Library copy with the same DOI gets one; a
+      read-only group offers no editing. Disable and re-enable the plugin with
+      a list tab open: one of each menu entry, one Step column, one section,
+      styles applied, no console errors. Two computers: mark different papers
+      on each before syncing; after both sync, one state note is left, the other
+      in the trash, and both marks are kept.
 - [ ] R1, Reading plan view, left from the 2026-11-11 walk (the rest passed;
       the user accepts the "Not in library" flash): untick the list folder in
       the graph's folder list, and View > Reading plan greys.
