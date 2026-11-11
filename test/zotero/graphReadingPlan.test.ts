@@ -12,6 +12,7 @@ import {
   writeReadState,
   type ReadStateDoc,
 } from "../../src/readingFormat/readState";
+import { gearChoiceValue } from "./gearChoices";
 import { delay } from "./visualHarness";
 
 const FOLDER_NAME = "Reading R1";
@@ -198,19 +199,6 @@ describe("The Reading plan view", function () {
     if (box.checked === ticked) return;
     box.checked = ticked;
     box.dispatchEvent(new win.Event("change"));
-  }
-
-  /** The gear's selects that offer `value`: x before y for an axis metric. */
-  function selectsOffering(value: string): HTMLSelectElement[] {
-    return (
-      Array.from(
-        graphRoot().querySelectorAll(".cm-appearance-panel select"),
-      ) as HTMLSelectElement[]
-    ).filter((select) =>
-      (Array.from(select.options) as HTMLOptionElement[]).some(
-        (option) => option.value === value,
-      ),
-    );
   }
 
   /** The Key's colour section, as subheading and label → count. */
@@ -475,12 +463,13 @@ describe("The Reading plan view", function () {
     expect(chipName(), "the chip names the view").to.equal("Reading plan");
     await closeChipMenu();
 
-    const xSelect = selectsOffering("reading-step")[0];
-    expect(xSelect, "the gear's x select").to.exist;
-    expect(xSelect.value, "the gear's x").to.equal("reading-step");
-    const colour = selectsOffering("read-state")[0];
-    expect(colour, "the gear's colour select").to.exist;
-    expect(colour.value, "the gear's colour").to.equal("read-state");
+    expect(gearChoiceValue(graphRoot(), "x-metric"), "the gear's x").to.equal(
+      "reading-step",
+    );
+    expect(
+      gearChoiceValue(graphRoot(), "colour"),
+      "the gear's colour",
+    ).to.equal("read-state");
     // P3 Unread, P2 Reading, P1 Read.
     await keySettlesTo({ Unread: 1, Reading: 1, Read: 1 });
   });

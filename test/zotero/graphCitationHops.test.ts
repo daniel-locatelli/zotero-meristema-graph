@@ -11,6 +11,7 @@ import {
   listSavedGraphs,
   loadSavedGraph,
 } from "../../src/services/savedGraphService";
+import { gearChoiceValue, openGearChoice, pickGearChoice } from "./gearChoices";
 import { delay } from "./visualHarness";
 
 const COLLECTION_NAME = "Stage 3 hops";
@@ -3396,16 +3397,11 @@ describe("Citation hops (Stage 3)", function () {
     }
 
     /**
-     * The gear's Y axis metric: the second select of the panel's second
-     * section (X axis, Y axis, Nodes). The floor is drawn on the axis that
-     * shows citations and on no other, so this is the case's precondition.
+     * The gear's Y axis metric. The floor is drawn on the axis that shows
+     * citations and on no other, so this is the case's precondition.
      */
     function yAxisMetric(): string {
-      const section = graphRoot().querySelectorAll(".cm-appearance-section")[1];
-      const selects = Array.from(
-        section?.querySelectorAll("select") ?? [],
-      ) as HTMLSelectElement[];
-      return selects[1]?.value ?? "no Y axis select";
+      return gearChoiceValue(graphRoot(), "y-metric") || "no Y axis choice";
     }
 
     /** Everything about the floor's row, for an assertion that has to explain itself. */
@@ -4416,14 +4412,12 @@ describe("Citation hops (Stage 3)", function () {
         available: 4,
       });
 
-      const option = graphRoot().querySelector(
-        'option[data-metric="seed-links"]',
-      ) as HTMLOptionElement | null;
-      expect(option, "the Seeds linked option").to.exist;
-      expect(option!.disabled, "offered with two seeds").to.equal(false);
-      const select = option!.parentElement as HTMLSelectElement;
-      select.value = "seed-links";
-      select.dispatchEvent(new win.Event("change", { bubbles: true }));
+      const row = openGearChoice(graphRoot(), "colour").find(
+        (candidate) => candidate.dataset.value === "seed-links",
+      );
+      expect(row, "the Seeds linked option").to.exist;
+      expect(row!.disabled, "offered with two seeds").to.equal(false);
+      pickGearChoice(graphRoot(), "colour", "seed-links");
       const tiers = await waitFor(
         () =>
           tierCount("Cite all 2 seeds") === COUNT_FORMAT.format(2)
@@ -4509,17 +4503,8 @@ describe("Citation hops (Stage 3)", function () {
      */
     it("drops the Key's Color section under Citation hop, and names Uniform after it", async function () {
       this.timeout(120_000);
-      // Uniform carries no `data-metric`, so the colour select is found by
-      // its Citation hop option and driven by value.
-      const colouring = (metric: string): void => {
-        const select = graphRoot().querySelector(
-          'option[data-metric="citation-hop"]',
-        )?.parentElement as HTMLSelectElement | null;
-        expect(select, "the colour select").to.exist;
-        select!.value = metric;
-        expect(select!.value, `the ${metric} option`).to.equal(metric);
-        select!.dispatchEvent(new win.Event("change", { bubbles: true }));
-      };
+      const colouring = (metric: string): void =>
+        pickGearChoice(graphRoot(), "colour", metric);
       const hopRows = (): string[] =>
         // "Seed" is also a state row, so only the hop rows tell the
         // colouring apart.
@@ -4589,12 +4574,7 @@ describe("Citation hops (Stage 3)", function () {
      */
     it("repaints the Key's swatches when the appearance flips", async function () {
       this.timeout(60_000);
-      const select = graphRoot().querySelector(
-        'option[data-metric="citation-hop"]',
-      )?.parentElement as HTMLSelectElement | null;
-      expect(select, "the colour select").to.exist;
-      select!.value = "uniform";
-      select!.dispatchEvent(new win.Event("change", { bubbles: true }));
+      pickGearChoice(graphRoot(), "colour", "uniform");
       const paperFill = (): string | null => {
         for (const entry of graphRoot().querySelectorAll(
           ".cm-key-entry",

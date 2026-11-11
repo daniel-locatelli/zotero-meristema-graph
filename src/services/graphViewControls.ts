@@ -14,6 +14,12 @@ import type {
 import type { LibrarySnapshot, ZoteroPaper } from "../domain/types";
 import { externalWorkDisplayTitle } from "./externalWorkMetadataService";
 import { colourOptionHasData, metricHasData } from "./graphLayoutAvailability";
+import {
+  CHOICE_HOST_ATTRIBUTE,
+  createChoiceMenu,
+  type ChoiceMenu,
+  type ChoiceOption,
+} from "./graphChoiceMenu";
 import { clamp } from "./graphMetricScale";
 import {
   axisMetricDefinitions,
@@ -227,102 +233,53 @@ interface SelectableMetricDefinition {
   interpretation?: string;
 }
 
-function createMetricSelect(
-  document: Document,
+const FREE_AXIS_OPTION: ChoiceOption = {
+  value: "free",
+  label: "Free",
+  title:
+    "Position nodes freely along this axis. Drag a node to move it along every free axis.",
+};
+
+/** The metrics the papers carry, as choices, after any leading ones. */
+function metricOptions(
   definitions: ReadonlyArray<SelectableMetricDefinition>,
   nodes: CitationGraphNode[],
-  selected: string,
-  includeFree = false,
-): HTMLSelectElement {
-  const select = element(document, "select", "cm-select");
-
-  if (includeFree) {
-    const option = element(document, "option");
-    option.value = "free";
-    option.textContent = "Free";
-    option.title =
-      "Position nodes freely along this axis. Drag a node to move it along every free axis.";
-    option.dataset.metricDescription = option.title;
-    select.appendChild(option);
-  }
-
-  for (const definition of definitions) {
-    if (!metricHasData(nodes, definition.id)) continue;
-
-    const option = element(document, "option");
-    option.value = definition.id;
-    option.textContent = definition.label;
-    option.title = metricDescription(definition);
-    option.dataset.metricDescription = option.title;
-    select.appendChild(option);
-  }
-
-  const options = Array.from(select.options) as HTMLOptionElement[];
-  const selectedOption = options.find(
-    (option) => option.value === selected && !option.disabled,
-  );
-
-  select.value = selectedOption?.value ?? options[0]?.value ?? "";
-
-  return select;
-}
-function appendMetricOption(
-  document: Document,
-  select: HTMLSelectElement,
-  value: string,
-  label: string,
-  description: string,
-): void {
-  const option = element(document, "option");
-  option.value = value;
-  option.textContent = label;
-  option.title = description;
-  option.dataset.metricDescription = description;
-  option.dataset.metric = value;
-  select.appendChild(option);
+  leading: ChoiceOption[] = [],
+): ChoiceOption[] {
+  return [
+    ...leading,
+    ...definitions
+      .filter((definition) => metricHasData(nodes, definition.id))
+      .map((definition) => ({
+        value: definition.id,
+        label: definition.label,
+        title: metricDescription(definition),
+      })),
+  ];
 }
 
-function selectAvailableValue(
-  select: HTMLSelectElement,
-  requested: string,
-): void {
-  const options = Array.from(select.options) as HTMLOptionElement[];
+/** `requested` if it is offered, else the first option that is. */
+function selectAvailableValue(menu: ChoiceMenu, requested: string): void {
+  const options = menu.options;
   const requestedOption = options.find(
     (option) => option.value === requested && !option.disabled,
   );
   const fallback = options.find((option) => !option.disabled);
-  select.value = requestedOption?.value ?? fallback?.value ?? "";
+  menu.value = requestedOption?.value ?? fallback?.value ?? "";
 }
 
 function createScaleSelect(
   document: Document,
   selected: GraphScaleType,
-): HTMLSelectElement {
-  const select = element(document, "select", "cm-select");
-  for (const [value, label] of [
-    ["linear", "Lin"],
-    ["log", "Log"],
-  ] as const) {
-    const option = element(document, "option");
-    option.value = value;
-    option.textContent = label;
-    select.appendChild(option);
-  }
-  select.value = selected;
-  return select;
-}
-
-/** A select's description lives in its tooltip; the panel carries no prose. */
-function describeInTooltip(select: HTMLSelectElement, fallback: string): void {
-  const showSelected = (): void => {
-    const option = select.selectedOptions[0];
-    select.title =
-      option?.dataset.metricDescription || option?.title || fallback;
-  };
-  for (const eventName of ["input", "change", "command"]) {
-    select.addEventListener(eventName, showSelected);
-  }
-  showSelected();
+): ChoiceMenu {
+  return createChoiceMenu(
+    document,
+    [
+      { value: "linear", label: "Lin" },
+      { value: "log", label: "Log" },
+    ],
+    selected,
+  );
 }
 
 /**
@@ -391,37 +348,33 @@ export function createAxesAppearance(
   panel.setAttribute("aria-label", "Graph display settings");
   panel.style.width = "min(390px, calc(100vw - 38px))";
 
-  const xMetric = createMetricSelect(
+  const xMetric = createChoiceMenu(
     document,
-    axisMetricDefinitions(),
-    nodes,
-    initial.xMetric,
-    true,
+    metricOptions(axisMetricDefinitions(), nodes, [FREE_AXIS_OPTION]),
+    "",
   );
+  selectAvailableValue(xMetric, initial.xMetric);
   const xScale = createScaleSelect(document, initial.xScale);
-  const yMetric = createMetricSelect(
+  const yMetric = createChoiceMenu(
     document,
-    axisMetricDefinitions(),
-    nodes,
-    initial.yMetric,
-    true,
+    metricOptions(axisMetricDefinitions(), nodes, [FREE_AXIS_OPTION]),
+    "",
   );
+  selectAvailableValue(yMetric, initial.yMetric);
   const yScale = createScaleSelect(document, initial.yScale);
-  const sizeMetric = createMetricSelect(
+  const sizeMetric = createChoiceMenu(
     document,
-    nodeSizeMetricDefinitions(),
-    nodes,
-    initial.nodeSizeMetric,
+    metricOptions(nodeSizeMetricDefinitions(), nodes, [
+      {
+        value: "uniform",
+        label: "Uniform",
+        title: "Display every visible node with the same size.",
+      },
+    ]),
+    "",
   );
-  const uniform = element(document, "option");
-  uniform.value = "uniform";
-  uniform.textContent = "Uniform";
-  uniform.title = "Display every visible node with the same size.";
-  uniform.dataset.metricDescription = uniform.title;
-  sizeMetric.prepend(uniform);
   selectAvailableValue(sizeMetric, initial.nodeSizeMetric);
 
-  const colorMetric = element(document, "select", "cm-select");
   const categoricalDefinitions: Array<{
     value: GraphNodeColorMetric;
     label: string;
@@ -463,49 +416,43 @@ export function createAxesAppearance(
       available: colourOptionHasData(nodes, "read-state"),
     },
   ];
-  for (const definition of categoricalDefinitions) {
-    if (!definition.available) continue;
-    appendMetricOption(
-      document,
-      colorMetric,
-      definition.value,
-      definition.label,
-      definition.description,
-    );
-  }
-  for (const definition of nodeColorMetricDefinitions()) {
-    if (!metricHasData(nodes, definition.id)) continue;
-    appendMetricOption(
-      document,
-      colorMetric,
-      definition.id,
-      definition.label,
-      metricDescription(definition),
-    );
-  }
-  const uniformColor = element(document, "option");
-  uniformColor.value = "uniform";
-  uniformColor.textContent = "Uniform";
-  uniformColor.title =
-    "One colour for every node. Folders are shown as regions, from the rail.";
-  uniformColor.dataset.metricDescription = uniformColor.title;
-  colorMetric.prepend(uniformColor);
+  const colorMetric = createChoiceMenu(
+    document,
+    metricOptions(nodeColorMetricDefinitions(), nodes, [
+      {
+        value: "uniform",
+        label: "Uniform",
+        title:
+          "One colour for every node. Folders are shown as regions, from the rail.",
+      },
+      ...categoricalDefinitions
+        .filter((definition) => definition.available)
+        .map((definition) => ({
+          value: definition.value,
+          label: definition.label,
+          title: definition.description,
+        })),
+    ]),
+    "",
+  );
   selectAvailableValue(colorMetric, initial.nodeColorMetric);
 
-  const labels = element(document, "select", "cm-select");
-  for (const [value, label] of [
-    ["title", "Title"],
-    ["author-year", "Author (year)"],
-    ["none", "No labels"],
-  ]) {
-    const option = element(document, "option");
-    option.value = value;
-    option.textContent = label;
-    labels.appendChild(option);
-  }
-  labels.value = initial.nodeLabelMode;
-  // The one select in the panel a test can name: the others are found by the
-  // metric they carry, and "Label" has no metric.
+  const labels = createChoiceMenu(
+    document,
+    [
+      { value: "title", label: "Title" },
+      { value: "author-year", label: "Author (year)" },
+      { value: "none", label: "No labels" },
+    ],
+    initial.nodeLabelMode,
+  );
+  // Named for tests and the stylesheet; the Zotero suite picks through these.
+  xMetric.dataset.role = "x-metric";
+  xScale.dataset.role = "x-scale";
+  yMetric.dataset.role = "y-metric";
+  yScale.dataset.role = "y-scale";
+  sizeMetric.dataset.role = "size";
+  colorMetric.dataset.role = "colour";
   labels.dataset.role = "labels";
 
   const tabs = element(document, "div", "cm-detail-tabs");
@@ -574,21 +521,16 @@ export function createAxesAppearance(
 
   const xPane = makePane("x", "X axis");
   xPane.append(compactLine(xScale, xMetric));
-  describeInTooltip(xMetric, "Choose horizontal position.");
   const yPane = makePane("y", "Y axis");
   yPane.append(compactLine(yScale, yMetric));
-  describeInTooltip(yMetric, "Choose vertical position.");
   const nodesPane = makePane("nodes", "Nodes");
   nodesPane.append(
     labelledLine("Label", labels),
     labelledLine("Size", sizeMetric),
     labelledLine("Color", colorMetric),
   );
-  describeInTooltip(
-    sizeMetric,
-    "Visible minimum and maximum values map to the plugin minimum and maximum node sizes.",
-  );
-  describeInTooltip(colorMetric, "Choose node colour.");
+  // Each choice's tooltip is its option's description; the panel carries no
+  // prose.
 
   // The View button names the view a graph came from and marks it edited, so
   // the gear no longer repeats it (W19, after D28).
@@ -603,6 +545,10 @@ export function createAxesAppearance(
   actions.appendChild(reset);
   panel.appendChild(actions);
   root.append(button, panel);
+  // The choices' popups hang from the control rather than the panel: the
+  // panel scrolls and blurs its backdrop, so a popup inside it is clipped to
+  // it, and Color's list runs past its bottom edge.
+  root.setAttribute(CHOICE_HOST_ATTRIBUTE, "");
 
   const read = (): GraphLayoutOptions => ({
     xMetric: xMetric.value as GraphAxisMetric,
@@ -619,12 +565,9 @@ export function createAxesAppearance(
       [yMetric, yScale],
     ] as const) {
       const selected = metric.value as GraphAxisMetric;
-      const logarithmic = scale.querySelector(
-        'option[value="log"]',
-      ) as HTMLOptionElement | null;
       const enabled =
         selected !== "free" && getMetricDefinition(selected).graph.logarithmic;
-      if (logarithmic) logarithmic.disabled = !enabled;
+      scale.setOptionDisabled("log", !enabled);
       if (!enabled && scale.value === "log") scale.value = "linear";
       scale.disabled = selected === "free";
     }
@@ -638,7 +581,7 @@ export function createAxesAppearance(
     onChange(layout);
     last = signature;
   };
-  for (const control of [
+  const choices = [
     xMetric,
     xScale,
     yMetric,
@@ -646,15 +589,16 @@ export function createAxesAppearance(
     sizeMetric,
     colorMetric,
     labels,
-  ]) {
+  ];
+  for (const control of choices) {
     const applySelection = (): void => {
       updateAvailability();
       commit(read());
     };
-    control.addEventListener("input", applySelection);
     control.addEventListener("change", applySelection);
   }
   const close = (): void => {
+    for (const choice of choices) choice.close();
     panel.hidden = true;
     panel.style.display = "none";
     button.setAttribute("aria-expanded", "false");
@@ -711,11 +655,9 @@ export function createAxesAppearance(
     restoreBuiltIn,
     hasStoredDefault: () => Boolean(defaults.stored()),
     setColourOptionAvailable(metric, available) {
-      const option = colorMetric.querySelector(
-        `option[data-metric="${metric}"]`,
-      ) as HTMLOptionElement | null;
-      if (!option) return;
-      option.disabled = !available;
+      // Uniform is the fallback, never withheld.
+      if (metric === "uniform") return;
+      colorMetric.setOptionDisabled(metric, !available);
       if (!available && colorMetric.value === metric) {
         colorMetric.value = "uniform";
         colorMetric.dispatchEvent(

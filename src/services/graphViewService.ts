@@ -218,6 +218,7 @@ import {
 } from "./nodeMenu";
 import { popoverShouldAnchorEnd } from "./popoverPlacement";
 import { insideSelectDropdown } from "./selectDropdown";
+import { choiceMenuOpenWithin } from "./graphChoiceMenu";
 import {
   appendRelatedWorkRows,
   button,
@@ -1577,6 +1578,9 @@ export function renderGraphView(
   };
   const closeAppearanceOnEscape = (event: KeyboardEvent): void => {
     if (event.key !== "Escape" || appearance.panel.hidden) return;
+    // An open choice takes this Escape for its own popup; the next one
+    // closes the panel.
+    if (choiceMenuOpenWithin(appearance.root)) return;
     appearance.close();
     appearance.button.focus();
   };

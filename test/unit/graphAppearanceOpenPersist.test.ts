@@ -5,104 +5,10 @@ import {
   createAxesAppearance,
   type AppearanceDefaults,
 } from "../../src/services/graphViewControls";
+import { FakeDocument, type FakeElement } from "./controlDoubles";
 import { node } from "./graphRendererDoubles";
 
-/*
- * Just enough DOM for the gear to build its panel: elements that hold
- * classes, attributes, text and children, selects that hold a value among
- * their options, and listeners a test fires by hand. Nothing is laid out.
- */
-class FakeElement {
-  className = "";
-  hidden = false;
-  disabled = false;
-  type = "";
-  title = "";
-  dataset: Record<string, string> = {};
-  style: Record<string, string> = {};
-  children: FakeElement[] = [];
-  textContent = "";
-  private ownValue = "";
-  private selected: FakeElement | null = null;
-  private explicit = false;
-  readonly tagName: string;
-  constructor(tagName: string) {
-    this.tagName = tagName;
-  }
-  get classList() {
-    return {
-      add: (...names: string[]) => {
-        this.className = [...this.className.split(" "), ...names]
-          .filter(Boolean)
-          .join(" ");
-      },
-    };
-  }
-  get firstElementChild(): FakeElement | null {
-    return this.children[0] ?? null;
-  }
-  get options(): FakeElement[] {
-    return this.children.filter((child) => child.tagName === "option");
-  }
-  get selectedOptions(): FakeElement[] {
-    const chosen = this.chosen();
-    return chosen ? [chosen] : [];
-  }
-  get value(): string {
-    if (this.tagName !== "select") return this.ownValue;
-    return this.chosen()?.ownValue ?? "";
-  }
-  set value(value: string) {
-    if (this.tagName !== "select") {
-      this.ownValue = value;
-      return;
-    }
-    this.explicit = true;
-    this.selected = this.options.find((o) => o.ownValue === value) ?? null;
-  }
-  private chosen(): FakeElement | null {
-    if (this.explicit) return this.selected;
-    return this.options.find((option) => !option.disabled) ?? null;
-  }
-  private listeners = new Map<string, Array<() => void>>();
-  setAttribute(): void {}
-  addEventListener(type: string, listener: () => void): void {
-    this.listeners.set(type, [...(this.listeners.get(type) ?? []), listener]);
-  }
-  fire(type: string): void {
-    for (const listener of this.listeners.get(type) ?? []) listener();
-  }
-  /** Every element under this one, depth first. */
-  descendants(): FakeElement[] {
-    return this.children.flatMap((child) => [child, ...child.descendants()]);
-  }
-  append(...nodes: FakeElement[]): void {
-    this.children.push(...nodes);
-  }
-  appendChild(node: FakeElement): FakeElement {
-    this.children.push(node);
-    return node;
-  }
-  prepend(node: FakeElement): void {
-    this.children.unshift(node);
-  }
-  querySelector(selector: string): FakeElement | null {
-    const match = /^option\[(value|data-metric)="([^"]+)"\]$/.exec(selector);
-    if (!match) throw new Error(`unsupported selector ${selector}`);
-    const [, attribute, wanted] = match;
-    return (
-      this.options.find((option) =>
-        attribute === "value"
-          ? option.ownValue === wanted
-          : option.dataset.metric === wanted,
-      ) ?? null
-    );
-  }
-}
-
-const fakeDocument = {
-  createElementNS: (_namespace: string, tag: string) => new FakeElement(tag),
-} as unknown as Document;
+const fakeDocument = new FakeDocument() as unknown as Document;
 
 const SAVED: GraphLayoutOptions = {
   xMetric: "year",
@@ -205,16 +111,22 @@ function buttonReading(
   return found;
 }
 
-function colourSelect(gear: { root: HTMLDivElement }): FakeElement {
+function colourChoice(gear: { root: HTMLDivElement }): FakeElement {
   const found = (gear.root as unknown as FakeElement)
     .descendants()
-    .find(
-      (el) =>
-        el.tagName === "select" &&
-        el.options.some((option) => option.value === "publication-type"),
-    );
-  if (!found) throw new Error("no colour select");
+    .find((el) => el.dataset.role === "colour");
+  if (!found) throw new Error("no colour choice");
   return found;
+}
+
+/** Open the gear's Color choice and click `value`'s row, as the reader does. */
+function pickColour(gear: { root: HTMLDivElement }, value: string): void {
+  colourChoice(gear).click();
+  const row = (gear.root as unknown as FakeElement)
+    .all("cm-choice-row")
+    .find((el) => el.dataset.value === value);
+  if (!row) throw new Error(`no ${value} row`);
+  row.click();
 }
 
 /**
@@ -232,9 +144,7 @@ describe("The gear's default", () => {
       (layout) => changes.push(layout),
       defaults,
     );
-    const select = colourSelect(gear);
-    select.value = "citations";
-    select.fire("change");
+    pickColour(gear, "citations");
     expect(changes.map((layout) => layout.nodeColorMetric)).to.deep.equal([
       "citations",
     ]);
@@ -250,9 +160,7 @@ describe("The gear's default", () => {
       () => {},
       defaults,
     );
-    const select = colourSelect(gear);
-    select.value = "citations";
-    select.fire("change");
+    pickColour(gear, "citations");
     gear.useForNewBlank();
     expect(persisted).to.deep.equal([
       { ...BUILT_IN, nodeColorMetric: "citations" },

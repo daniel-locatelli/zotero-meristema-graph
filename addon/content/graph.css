@@ -370,7 +370,8 @@
 .cm-node-menu[hidden],
 .cm-node-menu-item[hidden],
 .cm-node-menu-separator[hidden],
-.cm-appearance-panel[hidden] {
+.cm-appearance-panel[hidden],
+.cm-choice-popup[hidden] {
   display: none;
 }
 .cm-check-control {
@@ -657,7 +658,8 @@
   position: relative;
 }
 .cm-export-menu,
-.cm-node-menu {
+.cm-node-menu,
+.cm-choice-popup {
   position: absolute;
   display: grid;
   padding: 5px;
@@ -672,7 +674,8 @@
   right: 0;
   min-width: 180px;
 }
-.cm-export-menu button {
+.cm-export-menu button,
+.meristema-root .cm-choice-row {
   justify-content: flex-start;
   border-color: transparent;
 }
@@ -715,7 +718,8 @@
 .cm-view-chip-name[hidden] {
   display: none;
 }
-.cm-view-chip-caret {
+.cm-view-chip-caret,
+.cm-choice-caret {
   color: var(--cm-muted);
   font-size: calc(10 * var(--cm-font-unit));
 }
@@ -738,7 +742,8 @@
  * (D18), so it reads as "you are here" in either theme. The colours are the
  * ones `.meristema-root button:hover` mixes in paperDetail.css.
  */
-.meristema-root .cm-view-row[aria-checked="true"] {
+.meristema-root .cm-view-row[aria-checked="true"],
+.meristema-root .cm-choice-row[aria-selected="true"] {
   background: color-mix(in srgb, var(--cm-accent) 10%, Canvas);
   border-color: color-mix(in srgb, var(--cm-accent) 42%, var(--cm-border));
 }
@@ -1338,6 +1343,37 @@
 /* Both panels' rows, so a seed popover select matches an appearance one. */
 .cm-appearance-row .cm-select {
   min-height: 28px;
+}
+/*
+ * The gear's choices (graphChoiceMenu.ts): a button dressed as the field the
+ * select was, and a listbox in the File menu's popup whose chosen row wears
+ * the View dropdown's active-row paint, with no bullet beside it.
+ */
+.meristema-root .cm-choice {
+  justify-content: space-between;
+  min-width: 0;
+  padding: 4px 8px;
+  background: Field;
+  color: FieldText;
+}
+.cm-choice-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.cm-choice-popup {
+  z-index: 40;
+  max-height: 320px;
+  overflow: auto;
+}
+.meristema-root .cm-choice-row {
+  white-space: nowrap;
+  text-align: left;
+}
+.meristema-root .cm-choice-row--active {
+  outline: 1px solid var(--cm-accent);
+  outline-offset: -1px;
 }
 .cm-focus-seed-popover {
   position: absolute;

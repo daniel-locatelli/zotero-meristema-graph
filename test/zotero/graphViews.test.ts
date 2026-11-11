@@ -13,6 +13,12 @@ import {
   deleteSavedGraph,
 } from "../../src/services/savedGraphService";
 import { SAVED_GRAPH_READ_ONLY_STATUS } from "../../src/services/windowService";
+import {
+  gearChoice,
+  gearChoiceValue,
+  openGearChoice,
+  pickGearChoice,
+} from "./gearChoices";
 import { delay } from "./visualHarness";
 
 const COLLECTION_NAME = "D4 views";
@@ -197,12 +203,14 @@ describe("Graph views (D4)", function () {
     action!.click();
   }
 
-  function labelSelect(): HTMLSelectElement {
-    const select = graphRoot().querySelector(
-      '.cm-appearance-panel select[data-role="labels"]',
-    ) as HTMLSelectElement | null;
-    expect(select, "the gear's Label select").to.exist;
-    return select as HTMLSelectElement;
+  /** The gear's Label choice, as it reads now. */
+  function labelValue(): string {
+    return gearChoiceValue(graphRoot(), "labels");
+  }
+
+  /** Pick a label mode through the gear's Label choice, as the reader does. */
+  function pickLabel(value: string): void {
+    pickGearChoice(graphRoot(), "labels", value);
   }
 
   /**
@@ -594,10 +602,8 @@ describe("Graph views (D4)", function () {
       panelOpen!.querySelector(".cm-appearance-source"),
       "the gear's From view line",
     ).to.equal(null);
-    const labels = labelSelect();
-    expect(labels.value, "Overview's own label mode").to.equal("author-year");
-    labels.value = "none";
-    fire(labels, "change");
+    expect(labelValue(), "Overview's own label mode").to.equal("author-year");
+    pickLabel("none");
     await waitFor(() => chipName().includes("(edited)"), 5_000);
     expect(chipName(), `chip text was "${chipText()}"`).to.equal(
       "Overview (edited)",
@@ -1242,9 +1248,9 @@ describe("Graph views (D4)", function () {
     const labelsIn = (id: string | null): string =>
       (
         tabContent(id)?.querySelector(
-          '.cm-appearance-panel select[data-role="labels"]',
-        ) as HTMLSelectElement | null
-      )?.value ?? "";
+          '.cm-appearance-panel [data-choice-menu][data-role="labels"]',
+        ) as HTMLElement | null
+      )?.dataset.value ?? "";
     let otherTab: string | null = null;
     try {
       for (const name of names) Zotero.Prefs.clear(name, true);
@@ -1265,10 +1271,8 @@ describe("Graph views (D4)", function () {
       const viewAction = async (label: string): Promise<void> => {
         buttonReading(await openChipMenu(), label).click();
       };
-      const labels = labelSelect();
-      labels.value = labels.value === "title" ? "none" : "title";
-      const edited = labels.value;
-      fire(labels, "change");
+      const edited = labelValue() === "title" ? "none" : "title";
+      pickLabel(edited);
       await delay(300);
       expect(stored(), "the gear edit stored a default").to.equal("");
 
@@ -1300,7 +1304,7 @@ describe("Graph views (D4)", function () {
       await viewAction("Reset default view for new graphs");
       expect(stored(), "the made default is forgotten").to.equal("");
       expect(
-        labelSelect().value,
+        labelValue(),
         `the graph is on the built-in one; panel connected ${panel!.isConnected}`,
       ).to.equal("author-year");
     } finally {
@@ -1337,8 +1341,7 @@ describe("Graph views (D4)", function () {
     this.timeout(60_000);
     const container = tabContent(tabID) as any;
     const oldRoot = graphRoot();
-    const labels = labelSelect();
-    const edited = labels.value === "title" ? "none" : "title";
+    const edited = labelValue() === "title" ? "none" : "title";
     const realSetTimeout = win.setTimeout;
     const held: unknown[] = [];
     let caught = false;
@@ -1353,8 +1356,7 @@ describe("Graph views (D4)", function () {
         }
         return realSetTimeout.call(win, run, delayMs, ...rest);
       };
-      labels.value = edited;
-      fire(labels, "change");
+      pickLabel(edited);
     };
     const item = new Zotero.Item("book");
     item.setField("title", "Refresh gap fixture");
@@ -1367,7 +1369,7 @@ describe("Graph views (D4)", function () {
       }, 30_000);
       expect(fresh, `a refresh remounted the view; caught ${caught}`).to.exist;
       expect(
-        labelSelect().value,
+        labelValue(),
         `the new view read the change; held ${held.length} reports`,
       ).to.equal(edited);
     } finally {
@@ -1443,12 +1445,10 @@ describe("Graph views (D4)", function () {
         "and it is drawn",
       ).to.be.greaterThan(0);
 
-      const labels = labelSelect();
-      labels.value = labels.value === "title" ? "none" : "title";
-      fire(labels, "change");
+      pickLabel(labelValue() === "title" ? "none" : "title");
       await delay(300);
       buttonReading(panel(), "Reset").click();
-      expect(labelSelect().value, "Reset put the built-in label back").to.equal(
+      expect(labelValue(), "Reset put the built-in label back").to.equal(
         "author-year",
       );
       const menu = await openChipMenu();
@@ -1468,6 +1468,135 @@ describe("Graph views (D4)", function () {
           Zotero.Prefs.set(name, value as string | number, true);
         }
       });
+      const open = tabContent(tabID)?.querySelector(
+        ".cm-appearance-panel",
+      ) as HTMLElement | null;
+      if (open && !open.hidden) {
+        (
+          tabContent(tabID)?.querySelector(
+            ".cm-appearance-button",
+          ) as HTMLButtonElement | null
+        )?.click();
+      }
+    }
+  });
+
+  /*
+   * The R1 walk: the gear's selects opened Gecko's shared select popup, which
+   * draws a bullet beside the chosen entry. The gear's choices are its own
+   * listbox now, and the chosen row wears View's active-row paint. Measured
+   * here, in the main window, since the visual harness never loads Zotero's
+   * stylesheet.
+   */
+  it("marks the gear's chosen row like View's active one, with no bullet", async function () {
+    this.timeout(60_000);
+    const panel = (): HTMLElement =>
+      graphRoot().querySelector(".cm-appearance-panel") as HTMLElement;
+    const view = win as any;
+    try {
+      win.Zotero_Tabs.select(tabID);
+      await waitFor(() => {
+        if (!panel().hidden) return true;
+        (
+          graphRoot().querySelector(".cm-appearance-button") as HTMLElement
+        ).click();
+        return null;
+      }, 5_000);
+      expect(panel().hidden, "the gear's panel opened").to.equal(false);
+      buttonReading(panel(), "Nodes").click();
+
+      const choice = gearChoice(graphRoot(), "labels");
+      expect(choice.localName, "a button, not a select").to.equal("button");
+      const rows = openGearChoice(graphRoot(), "labels");
+      const popup = graphRoot().querySelector(
+        ".cm-choice-popup:not([hidden])",
+      ) as HTMLElement | null;
+      expect(popup, "the open popup").to.not.equal(null);
+      const box = popup!.getBoundingClientRect();
+      const anchor = choice.getBoundingClientRect();
+      const evidence =
+        `popup ${box.left},${box.top} ${box.width}x${box.height}; ` +
+        `button ${anchor.left},${anchor.top} ${anchor.width}x${anchor.height}; ` +
+        `window ${view.innerWidth}x${view.innerHeight}`;
+      expect(box.height, `the popup is drawn (${evidence})`).to.be.greaterThan(
+        0,
+      );
+      expect(
+        box.top >= anchor.bottom - 1 || box.bottom <= anchor.top + 1,
+        `it opens off the button, not over it (${evidence})`,
+      ).to.equal(true);
+
+      const chosen = rows.filter(
+        (row) => row.getAttribute("aria-selected") === "true",
+      );
+      expect(
+        chosen.map((row) => row.dataset.value),
+        "one chosen row, the chosen value",
+      ).to.deep.equal([choice.dataset.value]);
+      // Zotero's own progress overlay can lie over the whole pane in a full
+      // run (as in W5's case), so the first thing of the graph's at the row's
+      // centre is what is asked: the row, not the panel that once clipped it.
+      const centre = chosen[0]!.getBoundingClientRect();
+      const stack = win.document.elementsFromPoint(
+        centre.left + centre.width / 2,
+        centre.top + centre.height / 2,
+      ) as Element[];
+      const topOfGraph = stack.find((found) => graphRoot().contains(found));
+      expect(
+        topOfGraph === chosen[0] || chosen[0]!.contains(topOfGraph ?? null),
+        `the chosen row is on top, not clipped by the panel; found ${topOfGraph?.localName}.${topOfGraph?.className} (${evidence})`,
+      ).to.equal(true);
+
+      // View's active row, drawn by the same stylesheet in the same root.
+      const probe = win.document.createElementNS(
+        "http://www.w3.org/1999/xhtml",
+        "button",
+      ) as HTMLButtonElement;
+      probe.className = "cm-view-row";
+      probe.setAttribute("aria-checked", "true");
+      graphRoot().append(probe);
+      const viewPaint = view.getComputedStyle(probe);
+      const expected = {
+        background: viewPaint.backgroundColor,
+        border: viewPaint.borderTopColor,
+      };
+      probe.remove();
+      const paint = view.getComputedStyle(chosen[0]);
+      expect(
+        { background: paint.backgroundColor, border: paint.borderTopColor },
+        "the chosen row wears View's active-row paint",
+      ).to.deep.equal(expected);
+      const other = rows.find((row) => row !== chosen[0])!;
+      expect(
+        view.getComputedStyle(other).backgroundColor,
+        "and the others do not",
+      ).to.not.equal(expected.background);
+      for (const row of rows) {
+        const before = view.getComputedStyle(row, "::before").content;
+        expect(
+          { before, text: normalize(row.textContent) },
+          `no bullet beside ${row.dataset.value}`,
+        ).to.deep.equal({
+          before: "none",
+          text: normalize(row.textContent).replace(/^[•●○◦·]\s*/, ""),
+        });
+      }
+
+      // Escape shuts the popup and leaves the panel up.
+      choice.dispatchEvent(
+        new view.KeyboardEvent("keydown", { key: "Escape", bubbles: true }),
+      );
+      expect(popup!.hidden, "Escape shut the popup").to.equal(true);
+      expect(panel().hidden, "and left the gear's panel open").to.equal(false);
+
+      // A pick shuts it too, and the panel stays.
+      const before = gearChoiceValue(graphRoot(), "labels");
+      const next = before === "title" ? "none" : "title";
+      pickGearChoice(graphRoot(), "labels", next);
+      expect(popup!.hidden, "a pick shut the popup").to.equal(true);
+      expect(panel().hidden, "and left the gear's panel open").to.equal(false);
+      pickGearChoice(graphRoot(), "labels", before);
+    } finally {
       const open = tabContent(tabID)?.querySelector(
         ".cm-appearance-panel",
       ) as HTMLElement | null;
