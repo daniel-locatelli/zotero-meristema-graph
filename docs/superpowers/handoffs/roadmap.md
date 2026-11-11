@@ -331,7 +331,7 @@ any failure into a new entry above.
       paper in a list folder has `_unread`, one in no list has none (the first
       run after the update removes hand-added ones); a mark triggers no
       citation update request and no graph remount.
-- [ ] R1 fixes, colours: the Reading plan view and the section show Unread red,
+- [ ] R1 fixes, colours: the Reading plan view shows Unread red,
       Reading yellow, Read green, in both themes, red darkest and yellow
       lightest.
 - [ ] R1 fixes, graph gear (Meristema): open Color: the chosen row is
