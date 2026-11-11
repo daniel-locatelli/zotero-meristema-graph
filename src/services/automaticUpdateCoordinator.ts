@@ -20,6 +20,18 @@ import {
  * update leaves that modify alone.
  */
 export const SELF_WRITE_MARK = "meristemaSelfWrite";
+/**
+ * Meristema Reading saves its `_unread`, `_reading` and `_read` mirror tags
+ * with this mark: a tag a citation update never reads.
+ */
+export const READING_MIRROR_MARK = "meristemaReadingMirror";
+
+/** A modify written by a plugin, which no citation update needs. */
+export function isPluginWrite(
+  extra: Record<string, unknown> | undefined,
+): boolean {
+  return Boolean(extra?.[SELF_WRITE_MARK] || extra?.[READING_MIRROR_MARK]);
+}
 
 const CORE_IDLE_POLL_MS = 1000;
 
@@ -167,10 +179,10 @@ export function registerAutomaticCitationUpdates(): void {
       if (event !== "add" && event !== "modify") return;
       let added = false;
       for (const id of ids) {
-        // The plugin's own write (an abstract filled from Paper details)
-        // changes nothing a citation update reads; updating would refresh
-        // every open graph for it.
-        if (event === "modify" && extraData?.[String(id)]?.[SELF_WRITE_MARK])
+        // The plugin's own write (an abstract filled from Paper details, or
+        // Meristema Reading's mirror tags) changes nothing a citation update
+        // reads; updating would refresh every open graph for it.
+        if (event === "modify" && isPluginWrite(extraData?.[String(id)]))
           continue;
         pendingItemIDs.add(Number(id));
         added = true;
