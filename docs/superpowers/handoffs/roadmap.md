@@ -202,6 +202,12 @@ Use all providers button, and the three-action View menu.
       paper's title do nothing (focus goes to the item list). The R1
       decisions wait for the user. Renaming
       this repo to `zotero-meristema-graph` comes last.
+- [ ] Meristema Reading follow-ups from the R1 final review: guard menu
+      commands against Zotero MenuManager's leftover `command` listener (a
+      second menu use before an idle moment runs the first build's command
+      too); in `stateStore.listsChanged`, set `lastListed` only after the
+      mirror succeeds; a step dragged from another list over a reason may
+      drop its key as text.
 - [ ] R1 decisions for the user (defaults are built; change any): - Labels: item menu "Mark as" > Unread, Reading, Read; folder menu "Make
       Reading List" and "Open Reading List"; section "Reading list", with
       "Open as Tab" and "Not in the steps". - The tab opens from the folder menu or the section, not by
@@ -328,6 +334,10 @@ any failure into a new entry above.
       (the default, Enter) keeps the steps, Clear empties them; the folder,
       note and papers stay; the dialog text reads right with one step and with
       several.
+      On a list with no steps the entry is greyed out.
+- [ ] R1 fixes, guards: drag a step from one list's tab onto another folder's
+      section: refused, not-allowed cursor. Alt+Down in a reason, then at once
+      click a paper in another list folder: the section shows the new folder.
 - [ ] R1 fixes, mirror: mark a paper: its tag follows in My Library; an Unread
       paper in a list folder has `_unread`, one in no list has none (the first
       run after the update removes hand-added ones); a mark triggers no
