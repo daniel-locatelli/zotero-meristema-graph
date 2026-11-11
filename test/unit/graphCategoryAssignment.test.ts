@@ -348,14 +348,14 @@ describe("read-state colouring", () => {
       },
     );
 
-  it("colours each state from a fixed ramp stop, in reading order", () => {
+  it("colours each state from a fixed read-state token, in reading order", () => {
     const result = assign();
     expect(
       result.entries.map((e) => [e.label, e.count, e.color]),
     ).to.deep.equal([
-      ["Unread", 1, LIGHT.ramp[0]],
-      ["Reading", 1, LIGHT.ramp[2]],
-      ["Read", 2, LIGHT.ramp[4]],
+      ["Unread", 1, LIGHT.readState.unread],
+      ["Reading", 1, LIGHT.readState.reading],
+      ["Read", 2, LIGHT.readState.read],
     ]);
     expect(result.other).to.equal(null);
     expect(result.noValue?.label).to.equal("Not in library");
@@ -378,6 +378,6 @@ describe("read-state colouring", () => {
       readStateOf: () => "read",
     });
     expect(result.entries).to.have.length(1);
-    expect(result.entries[0].color).to.equal(LIGHT.ramp[4]);
+    expect(result.entries[0].color).to.equal(LIGHT.readState.read);
   });
 });

@@ -68,12 +68,6 @@ const READ_STATE_LABELS: Record<ReadState, string> = {
   reading: "Reading",
   read: "Read",
 };
-/** Fixed ramp stops, so a state is the same colour on every graph (user, 2026-11-07). */
-const READ_STATE_RAMP: Record<ReadState, number> = {
-  unread: 0,
-  reading: 2,
-  read: 4,
-};
 const NOT_IN_LIBRARY = "Not in library";
 
 export interface CategoryEntry {
@@ -350,7 +344,7 @@ function assignSeedLinkTiers(
 
 /**
  * Read state is categorical but fixed: Unread, Reading, Read in that order,
- * each from its own ramp stop, so the ledger is neither read nor moved and no
+ * each from its own read-state token, so the ledger is neither read nor moved and no
  * state collapses into Other. A paper with no state (not in the library) is
  * the no-value grey.
  */
@@ -368,8 +362,7 @@ function assignReadStates(
     if (state) counts.set(state, (counts.get(state) ?? 0) + 1);
     else noValueCount += 1;
   }
-  const colorOf = (state: ReadState): string =>
-    theme.ramp[Math.min(READ_STATE_RAMP[state], theme.ramp.length - 1)];
+  const colorOf = (state: ReadState): string => theme.readState[state];
   const entries: CategoryEntry[] = READ_STATE_ORDER.filter((s) =>
     counts.has(s),
   ).map((state) => ({

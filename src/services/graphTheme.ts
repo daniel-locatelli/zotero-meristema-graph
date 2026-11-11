@@ -104,6 +104,12 @@ export interface GraphTheme {
   seeds: readonly string[];
   edges: GraphEdgeTokens;
   states: GraphStateTokens;
+  /**
+   * Unread red, Reading yellow, Read green (R1, the user's call): fixed per
+   * state, apart from the ramp; red darkest and yellow lightest, so they part
+   * without hue too.
+   */
+  readState: { unread: string; reading: string; read: string };
 }
 
 /**
@@ -166,6 +172,7 @@ const LIGHT_THEME: GraphTheme = {
     floorBand: "rgba(27, 29, 25, .06)",
     readingPath: "#63665d",
   },
+  readState: { unread: "#b3261e", reading: "#b08500", read: "#2d8247" },
 };
 
 const DARK_THEME: GraphTheme = {
@@ -218,6 +225,7 @@ const DARK_THEME: GraphTheme = {
     floorBand: "rgba(0, 0, 0, .28)",
     readingPath: "#9a9c93",
   },
+  readState: { unread: "#e5534b", reading: "#e8c547", read: "#57b36c" },
 };
 
 /** The shadow colour a lit edge drawn in `edgeColor` casts (B99). */

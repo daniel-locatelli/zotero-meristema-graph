@@ -320,3 +320,64 @@ describe("the seed palette", function () {
     }
   });
 });
+
+function contrastRatio(foreground: string, background: string): number {
+  const luminance = (hex: string): number => {
+    const [r, g, b] = toLinear(hex);
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  };
+  const [a, b] = [luminance(foreground), luminance(background)];
+  return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
+}
+
+function hslHue(hex: string): number {
+  const [r, g, b] = [1, 3, 5].map(
+    (i) => Number.parseInt(hex.slice(i, i + 2), 16) / 255,
+  );
+  const max = Math.max(r, g, b);
+  const delta = max - Math.min(r, g, b);
+  const hue =
+    max === r
+      ? ((g - b) / delta) % 6
+      : max === g
+        ? (b - r) / delta + 2
+        : (r - g) / delta + 4;
+  return (hue * 60 + 360) % 360;
+}
+
+describe("the read-state colours", function () {
+  const LIGHTNESS_GAP = 8;
+  it("clear 3:1 contrast against the paper", function () {
+    for (const theme of themes()) {
+      for (const [state, colour] of Object.entries(theme.readState)) {
+        expect(
+          contrastRatio(colour, theme.surfaces.paper),
+          `${theme.scheme} ${state} ${colour}`,
+        ).to.be.at.least(3);
+      }
+    }
+  });
+
+  it("order by lightness, red darkest and yellow lightest, with room between", function () {
+    for (const theme of themes()) {
+      const { unread, read, reading } = theme.readState;
+      const [u, r, y] = [unread, read, reading].map((c) => labOf(c)[0]);
+      expect(r - u, `${theme.scheme} read - unread`).to.be.at.least(
+        LIGHTNESS_GAP,
+      );
+      expect(y - r, `${theme.scheme} reading - read`).to.be.at.least(
+        LIGHTNESS_GAP,
+      );
+    }
+  });
+
+  it("are red, yellow and green by hue", function () {
+    for (const theme of themes()) {
+      const { unread, reading, read } = theme.readState;
+      const name = (s: string): string => `${theme.scheme} ${s}`;
+      expect(hslHue(unread), name("unread")).to.be.within(0, 30);
+      expect(hslHue(reading), name("reading")).to.be.within(40, 65);
+      expect(hslHue(read), name("read")).to.be.within(100, 160);
+    }
+  });
+});
