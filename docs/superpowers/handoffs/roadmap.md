@@ -202,6 +202,9 @@ Use all providers button, and the three-action View menu.
       paper's title do nothing (focus goes to the item list). The R1
       decisions wait for the user. Renaming
       this repo to `zotero-meristema-graph` comes last.
+- [ ] R2 Reading overview and queue: spec in
+      `docs/superpowers/specs/2026-11-12-reading-overview-design.md`, waiting
+      for the user's review; then a plan.
 - [ ] Meristema Reading follow-ups from the R1 final review: guard menu
       commands against Zotero MenuManager's leftover `command` listener (a
       second menu use before an idle moment runs the first build's command
