@@ -105,8 +105,8 @@ read state, paper ids and next-up rule are unchanged.
   every `zot.py` verb it reads My Library only, so `library` is `user`. Claude
   reads this before proposing what to read next.
 
-- Both run `doctor` first; the write re-reads the note and checks its JSON,
-  tags and the folder's papers.
+- The write runs `doctor` first, then re-reads the note and checks its JSON,
+  tags and the folder's papers; the read is unguarded, like the other reads.
 
 ## Not in scope
 

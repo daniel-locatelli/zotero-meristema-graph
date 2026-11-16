@@ -205,7 +205,8 @@ Use all providers button, and the three-action View menu.
 - [ ] R2 Reading overview and queue: built and unwalked (spec in
       `docs/superpowers/specs/2026-11-12-reading-overview-design.md`). Reading
       plugin and skills repo (1.13.0) on branch `r2-overview`, not merged or
-      pushed; the XPI is built; this repo only has the docs. The R2 lines under
+      pushed; the XPI is built; this repo has the docs plus the vendored queue
+      format and its fixture tests. The R2 lines under
       Manual verification are the walk.
 - [ ] Meristema Reading follow-ups from the R1 final review: guard menu
       commands against Zotero MenuManager's leftover `command` listener (a
