@@ -202,9 +202,11 @@ Use all providers button, and the three-action View menu.
       paper's title do nothing (focus goes to the item list). The R1
       decisions wait for the user. Renaming
       this repo to `zotero-meristema-graph` comes last.
-- [ ] R2 Reading overview and queue: spec in
-      `docs/superpowers/specs/2026-11-12-reading-overview-design.md`, waiting
-      for the user's review; then a plan.
+- [ ] R2 Reading overview and queue: built and unwalked (spec in
+      `docs/superpowers/specs/2026-11-12-reading-overview-design.md`). Reading
+      plugin and skills repo (1.13.0) on branch `r2-overview`, not merged or
+      pushed; the XPI is built; this repo only has the docs. The R2 lines under
+      Manual verification are the walk.
 - [ ] Meristema Reading follow-ups from the R1 final review: guard menu
       commands against Zotero MenuManager's leftover `command` listener (a
       second menu use before an idle moment runs the first build's command
@@ -352,6 +354,25 @@ any failure into a new entry above.
       highlighted like View's active row, with no bullet, in both themes. The
       popup flips above the button near the window's bottom. Down, Down,
       Enter, then Escape twice closes the popup, then the panel.
+- [ ] R2, first: rebuild and reinstall Meristema Reading; update the skill
+      (skills repo main).
+- [ ] R2, queue: ask Claude for a queue from two lists (`zot.py reading-overview`,
+      then `reading-list --queue`): a "Reading queue" folder and list appear; its
+      tab works as any list's.
+- [ ] R2, Overview: right-click My Library, Open Reading Overview: the queue's
+      next paper large with its reason and "From" lists, up to five steps after
+      it, then every list with "N read · N reading · N left" and its next step,
+      in both themes. A list that cannot be read shows `Cannot be read`.
+- [ ] R2, marking: click the next paper's state to Read: the next step takes its
+      place; the list it came from shows it Read too.
+- [ ] R2, links: a "From" list and a list row open their tabs; Open queue opens
+      the queue's tab; Reading Overview in a list tab comes back to the
+      Overview.
+- [ ] R2, edge lines: untag the queue note: "No reading queue yet."; tag a
+      second list: the duplicate line names it; mark every queue step Read:
+      "All read."
+- [ ] R2, restart: with the Overview open, quit and start Zotero: it comes back
+      behind the library tab.
 - [ ] R1, Meristema Reading, left from the earlier walk. Install
       `zotero-meristema-reading/.scaffold/build/meristema-reading.xpi`. With
       the Step column on, click quickly between items while a mark settles: the
