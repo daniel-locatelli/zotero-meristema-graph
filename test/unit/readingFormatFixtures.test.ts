@@ -28,6 +28,12 @@ import {
   type ReadStateDoc,
   type ReadStateEntry,
 } from "../../src/readingFormat/readState";
+import {
+  pickQueue,
+  sourceLists,
+  type QueueCandidate,
+  type SourceList,
+} from "../../src/readingFormat/readingQueue";
 
 const root = fileURLToPath(
   new URL("../fixtures/reading-format/", import.meta.url),
@@ -41,6 +47,7 @@ interface Index {
   writes: string[];
   paperIds: string;
   nextUp: string;
+  queue: string;
 }
 type CaseDir = "lists" | "states" | "writes";
 const DIRS: readonly CaseDir[] = ["lists", "states", "writes"];
@@ -54,6 +61,7 @@ after(() => {
     ...DIRS.flatMap((dir) => index[dir].map((name) => `${dir}/${name}`)),
     index.paperIds,
     index.nextUp,
+    index.queue,
   ];
   expect([...ran].sort()).to.deep.equal(listed.sort());
 });
@@ -222,6 +230,37 @@ describe("next-up fixtures", () => {
   });
 });
 
+describe("queue fixtures", () => {
+  const all = json<{
+    pick: {
+      name: string;
+      notes: QueueCandidate[];
+      expect: { queue: string | null; duplicates: string[] };
+    }[];
+    sourceLists: {
+      name: string;
+      queueNote: string;
+      queue: string[];
+      lists: SourceList[];
+      expect: Record<string, string[]>;
+    }[];
+  }>(index.queue);
+  for (const c of all.pick) {
+    it(`pick: ${c.name}`, () => {
+      ran.add(index.queue);
+      expect(pickQueue(c.notes)).to.deep.equal(c.expect);
+    });
+  }
+  for (const c of all.sourceLists) {
+    it(`source lists: ${c.name}`, () => {
+      ran.add(index.queue);
+      expect(sourceLists(c.queueNote, c.queue, c.lists)).to.deep.equal(
+        c.expect,
+      );
+    });
+  }
+});
+
 describe("fixture index", () => {
   const notesOf = (dir: CaseDir, name: string): string[] => {
     const c = json<{ note?: string; notes?: string[] }>(`${dir}/${name}`);
@@ -250,6 +289,7 @@ describe("fixture index", () => {
       "index.json",
       index.paperIds,
       index.nextUp,
+      index.queue,
       ...DIRS.flatMap((dir) =>
         index[dir].flatMap((name) => [`${dir}/${name}`, ...notesOf(dir, name)]),
       ),
