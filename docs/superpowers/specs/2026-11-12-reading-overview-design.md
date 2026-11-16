@@ -16,8 +16,9 @@ read state, paper ids and next-up rule are unchanged.
   the tag by hand in Zotero makes a list the queue.
 - The queue lives in My Library only. A tagged note in a group library is read
   as an ordinary list.
-- One queue: of the tagged notes in My Library, the oldest by date added, then
-  key. A second tagged note is read as an ordinary list.
+- One queue: of the tagged notes in My Library that are their folder's list
+  note (R1's oldest-note rule), the oldest by date added, then key. A second
+  tagged note is read as an ordinary list.
 - Any paper may be a step, in a topic list or not. Its folder is the queue's
   folder, so a queued paper also sits there (a paper may be in several
   folders).
@@ -64,9 +65,10 @@ read state, paper ids and next-up rule are unchanged.
   with `--replace`, the existing queue's topic and folder are kept unless given.
   Papers are added and filed as for any list, and the note gets both tags. A
   library that has a queue is refused without `--replace`.
-- `--replace` on the queue writes the steps given and takes the papers no
-  longer in them out of the queue's folder (never out of the library or other
-  folders), so a dropped step leaves the queue. It writes the oldest tagged
+- Every `--queue` write takes the papers not in its steps out of the queue's
+  folder (never out of the library or other folders), so a dropped step
+  leaves the queue and the folder holds exactly the steps. It writes the
+  oldest tagged
   note and never touches a second one. Rewriting with `--replace` is how the
   queue is reordered.
 - `zot.py reading-overview` prints one JSON object:
@@ -99,7 +101,8 @@ read state, paper ids and next-up rule are unchanged.
   }
   ```
 
-  `sourceLists` is filled for the queue's steps and empty elsewhere. Claude
+  `sourceLists` is filled for the queue's steps and empty elsewhere. Like
+  every `zot.py` verb it reads My Library only, so `library` is `user`. Claude
   reads this before proposing what to read next.
 
 - Both run `doctor` first; the write re-reads the note and checks its JSON,
