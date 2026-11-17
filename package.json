@@ -1,5 +1,5 @@
 {
-  "name": "meristema-zotero",
+  "name": "zotero-meristema-graph",
   "private": true,
   "type": "module",
   "packageManager": "npm@11.18.0",
@@ -22,13 +22,13 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/daniel-locatelli/meristema-zotero.git"
+    "url": "git+https://github.com/daniel-locatelli/zotero-meristema-graph.git"
   },
   "author": "Daniel Nunes Locatelli",
   "bugs": {
-    "url": "https://github.com/daniel-locatelli/meristema-zotero/issues"
+    "url": "https://github.com/daniel-locatelli/zotero-meristema-graph/issues"
   },
-  "homepage": "https://github.com/daniel-locatelli/meristema-zotero#readme",
+  "homepage": "https://github.com/daniel-locatelli/zotero-meristema-graph#readme",
   "license": "AGPL-3.0-or-later",
   "engines": {
     "node": ">=24 <27",

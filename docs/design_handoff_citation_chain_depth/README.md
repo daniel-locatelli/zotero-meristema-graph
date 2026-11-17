@@ -12,7 +12,7 @@ What 6a adds or changes:
 6. **Toolbar reduced** to Filter · Similar · Export · Refresh · search. Removed: "Explore" identity/title, history arrows, Explore settings button, Add Node, Seeds popover. No separate Explore view remains.
 7. **Collections filter** moves from the Filter popover into Scope as a checkbox tree; the toolbar Filter keeps tags, item type and data-quality.
 
-Target repo: `daniel-locatelli/meristema-zotero`, branch `main`. Relevant code: `src/services/graphViewService.ts` (toolbar, identity, filter wiring), `src/services/graphKeyRail.ts` + `graphKeyModel.ts` (rail), `src/services/graphFocusService.ts` (seed/focus projection), `src/services/graphTheme.ts` (all colours), `src/services/graphEdgeStyle.ts`, `src/services/citationGraphRenderer.ts` (canvas), `src/services/graphLabelBudget.ts`, `addon/content/graph.css`.
+Target repo: `daniel-locatelli/zotero-meristema-graph`, branch `main`. Relevant code: `src/services/graphViewService.ts` (toolbar, identity, filter wiring), `src/services/graphKeyRail.ts` + `graphKeyModel.ts` (rail), `src/services/graphFocusService.ts` (seed/focus projection), `src/services/graphTheme.ts` (all colours), `src/services/graphEdgeStyle.ts`, `src/services/citationGraphRenderer.ts` (canvas), `src/services/graphLabelBudget.ts`, `addon/content/graph.css`.
 
 ## About the Design Files
 `Citation Chain Depth.dc.html` is a **design reference in HTML with synthetic data**, not production code. Recreate behaviour and look in the plugin's environment (TypeScript services + canvas renderer + `graph.css`), following repo rules: colour literals only in `graphTheme.ts`; CSS-px measures scaled by device pixel ratio; pure decision functions outside the render loop with unit tests in `test/unit`.

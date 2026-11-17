@@ -23,7 +23,7 @@ those relationships directly inside Zotero.
 
 ## Installation:
 
-1. Open the last [release](https://github.com/daniel-locatelli/meristema-zotero/releases/latest) page.
+1. Open the last [release](https://github.com/daniel-locatelli/zotero-meristema-graph/releases/latest) page.
 
 2. Under **Assets**, download the latest `.xpi` file.
 

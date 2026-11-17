@@ -200,8 +200,7 @@ Use all providers button, and the three-action View menu.
       that walk are built and unwalked (the R1 fixes lines under Manual
       verification). Not fixed: Alt+Up and Alt+Down right after a click on a
       paper's title do nothing (focus goes to the item list). The R1
-      decisions wait for the user. Renaming
-      this repo to `zotero-meristema-graph` comes last.
+      decisions wait for the user. This repo is now `zotero-meristema-graph`.
 - [ ] R2 Reading overview and queue: built and unwalked (spec in
       `docs/superpowers/specs/2026-11-12-reading-overview-design.md`). Reading
       plugin and skills repo (1.13.0) on branch `r2-overview`, not merged or
