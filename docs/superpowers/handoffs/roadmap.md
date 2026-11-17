@@ -371,7 +371,7 @@ any failure into a new entry above.
       Overview.
 - [ ] R2, edge lines: untag the queue note: "No reading queue yet."; tag a
       second list: the duplicate line names it; mark every queue step Read:
-      "All read."
+      "All read."; a list emptied of steps reads "No steps".
 - [ ] R2, restart: with the Overview open, quit and start Zotero: it comes back
       behind the library tab.
 - [ ] R1, Meristema Reading, left from the earlier walk. Install

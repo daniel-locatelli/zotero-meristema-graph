@@ -51,8 +51,8 @@ read state, paper ids and next-up rule are unchanged.
   folder and says to remove its tag.
 - **Lists, below:** every list in every library other than the queue, by topic
   (a group list shows its library's name): topic, folder, progress
-  (`3 read · 1 reading · 4 left`), and its next step, or "All read". A row
-  opens that list's tab.
+  (`3 read · 1 reading · 4 left`), and its next step, or "All read", or "No
+  steps" for a list with none. A row opens that list's tab.
 - Redraws on the change events the list tabs already follow (notes, folder
   membership, state); labels papers by the `paperLabel` setting.
 
@@ -64,7 +64,9 @@ read state, paper ids and next-up rule are unchanged.
   topic and folder default to "Reading queue" (the folder is made if absent);
   with `--replace`, the existing queue's topic and folder are kept unless given.
   Papers are added and filed as for any list, and the note gets both tags. A
-  library that has a queue is refused without `--replace`.
+  library that has a queue is refused without `--replace`. The first queue is
+  refused in a folder that holds papers not in its steps, or a list note (tag
+  that note by hand instead, §1); nothing is written.
 - Every `--queue` write takes the papers not in its steps out of the queue's
   folder (never out of the library or other folders), so a dropped step
   leaves the queue and the folder holds exactly the steps. It writes the
@@ -125,10 +127,11 @@ read state, paper ids and next-up rule are unchanged.
 - Plugin, Zotero suite: open the Overview from the library menu, see the
   queue's next up, the steps after it and a list's progress; mark the next up
   Read and see the next step take its place; the no-queue, empty, all-read and
-  second-queue lines; a source list opens its tab; the tab reopens after a
-  restart.
+  second-queue lines; a list with no steps reads "No steps"; a source list
+  opens its tab; the tab reopens after a restart.
 - Skill: `--queue` writes both tags and refuses a second queue without
-  `--replace`; `--replace` keeps topic and folder and unfiles dropped papers
+  `--replace`; the first queue is refused in a folder with other papers or a
+  list note; `--replace` keeps topic and folder and unfiles dropped papers
   from the queue's folder only; `reading-overview` output matches the
   fixtures.
 
